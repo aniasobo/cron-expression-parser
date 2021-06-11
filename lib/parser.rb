@@ -1,6 +1,16 @@
 module Parser
   module CronExpression
+    # *   -> all of
+    # */x -> every x of
+    # y,x -> only y and x of
+    # y-z -> range y to z of
+
     FIELDS = ['minute', 'hour', 'day of month', 'month', 'day of week', 'command']
+    MAX_MINUTES = 60
+    COUNTABLE_HOURS = 24
+    MAX_DAYS_IN_MONTH = 31
+    COUNTABLE_MONTHS = 12
+    COUNTABLE_DAYS_IN_WEEK = 7
 
     def self.parse(input)
       data = input.split
@@ -15,22 +25,45 @@ module Parser
       generate_table
     end
 
-    # private
+    # if only digits
+    # if ,
+    # if -
+    # if *
+      # if */
+      # else
 
     def self.process_minutes(minutes)
-      hour = 60
+      if minutes.scan(/\D/).empty?      # no non-digits
+        return minutes
+      elsif minutes[',']
+        process_comma_separated_expression(minutes)
+      elsif minutes['-']
+        process_range(minutes, starts_at_zero=true)
+      elsif minutes['*']
+        handle_asterisk_in_minutes(minutes)
+      else
+        true
+      end
+    end
 
-      if minutes.include?('*/')
+    def self.handle_asterisk_in_minutes(minutes)
+      if minutes['*/']
         result = [0]
         value = [minutes].map { |i| i[/\d+/] }.first.to_i # "15"
         starting_value = value
-        while value < hour do
+        while value < MAX_MINUTES do
           result << value
           value = value + starting_value
         end
-        return result.map { |i| i.to_s }.join(' ')
+        format_result(result)
       else
-        return minutes
+        i = 0
+        result = []
+        for minute in 0...MAX_MINUTES do
+          result << minute
+          i += 1
+        end
+        format_result(result)
       end
     end
 
@@ -52,6 +85,23 @@ module Parser
     def self.process_dow(dow)
       # TODO
       dow
+    end
+
+    def self.process_comma_separated_expression(expression)
+      expression.split(',').join(' ')
+    end
+
+    def self.process_range(range, starts_at_zero=false)
+      starts_at_zero ? result = [0] : result = []
+      limiter = range.split('-').last.to_i
+      for unit in 1..limiter do
+        result << unit
+      end
+      format_result(result)
+    end
+
+    def self.format_result(result)
+      result.map { |i| i.to_s }.join(' ')
     end
 
     def self.generate_table
