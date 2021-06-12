@@ -4,9 +4,14 @@
 
 1. Clone or download this repo
 2. `> bundle`
-3. Run it in command line passing your expression as a single string, like so: 
- `> ruby lib/parser.rb '*/15 0 1,15 * 1-5 /usr/bin/find'`
-4. The above command should give you the following output:
+
+### Parsing expressions:
+
+Run this program in your command line passing your expression as a single string, like so:   
+
+`> ruby lib/parser.rb '*/15 0 1,15 * 1-5 /usr/bin/find'` 
+
+The above command should give you the following output:  
 
 <img width="403" alt="Screenshot 2021-06-12 at 18 54 27" src="https://user-images.githubusercontent.com/44335120/121785120-d056d900-cbaf-11eb-8b21-ec67db424aad.png">
 
