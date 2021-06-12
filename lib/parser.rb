@@ -3,19 +3,19 @@ module Parser
     FIELDS = ['minute', 'hour', 'day of month', 'month', 'day of week', 'command']
     MAX_MINUTES = 60
     MAX_HOURS = 24
-    MAX_DAYS_IN_MONTH = 31
+    DAYS_IN_MONTH_DELIMITER = 32
     COUNTABLE_MONTHS = 12
     COUNTABLE_DAYS_IN_WEEK = 7
 
     def self.parse(input)
       data = input.split
 
-      @minutes = process_minutes(data.first)   # "*/15"            -> "0 15 30 45"
-      @hours = process_hours(data[1])          # "0"               -> "0"
-      @day_of_month = process_dom(data[2])     # "1,15"            -> "1 15"
-      @months = process_months(data[3])        # "*"               -> "1 2 3 4 5 6 7 8 9 10 11 12"
-      @day_of_week = process_dow(data[4])      # "1-5"             -> "1 2 3 4 5"
-      @command = data.last                     # "/usr/bin/find"   -> "/usr/bin/find"
+      @minutes = process_minutes(data.first)
+      @hours = process_hours(data[1])
+      @day_of_month = process_days(data[2])
+      @months = process_months(data[3])
+      @day_of_week = process_dow(data[4])
+      @command = data.last
 
       generate_table
     end
@@ -26,7 +26,7 @@ module Parser
       elsif minutes[',']
         process_comma_separated_expression(minutes)
       elsif minutes['-']
-        process_range(minutes, starts_at_zero=true)
+        process_range(minutes)
       elsif minutes['*']
         handle_asterisk(minutes, MAX_MINUTES, starts_at_zero=true)
       else
@@ -47,17 +47,26 @@ module Parser
       elsif hours[',']
         process_comma_separated_expression(hours)
       elsif hours['-']
-        process_range(hours, starts_at_zero=true)
+        process_range(hours)
       elsif hours['*']
         handle_asterisk(hours, MAX_HOURS, starts_at_zero=true)
       else
-        true                          # add exceptions
+        true                          # exceptions TBA
       end
     end
 
-    def self.process_dom(dom)
-      # TODO
-      dom
+    def self.process_days(days)
+      if days.scan(/\D/).empty?      # no non-digits
+        return days
+      elsif days[',']
+        process_comma_separated_expression(days)
+      elsif days['-']
+        process_range(days)
+      elsif days['*']
+        handle_asterisk(days, DAYS_IN_MONTH_DELIMITER)
+      else
+        true                          # exceptions TBA
+      end
     end
 
     def self.process_months(months)
@@ -70,23 +79,30 @@ module Parser
       dow
     end
 
-    def self.handle_asterisk(units_of_time, limiter, starts_at_zero=false)
+    def self.handle_asterisk(units_of_time, delimiter, starts_at_zero=false)
       if units_of_time['*/']
-        starts_at_zero ? result = [0] : result = []
-        value = [units_of_time].map { |i| i[/\d+/] }.first.to_i
-        starting_value = value
-        while value < limiter do
+        starts_at_zero ? margin = 0 : margin = 1
+        starts_at_zero ? result = [0] : result = [1]
+
+        value = [units_of_time].map { |i| i[/\d+/] }.first.to_i   # grab the numerics
+        starting_value = value                                    # store the multiplier
+        value += margin                                           # set starting value
+
+        while value < delimiter do
           result << value
-          value = value + starting_value
+          value += starting_value
         end
+
         format_result(result)
       else
         starts_at_zero ? i = 0 : i = 1
         result = []
-        for unit_of_time in 0...limiter do
+
+        for unit_of_time in i...delimiter do
           result << unit_of_time
           i += 1
         end
+
         format_result(result)
       end
     end
@@ -95,10 +111,12 @@ module Parser
       expression.split(',').join(' ')
     end
 
-    def self.process_range(range, starts_at_zero=false)
-      starts_at_zero ? result = [0] : result = []
-      limiter = range.split('-').last.to_i
-      for unit in 1..limiter do
+    def self.process_range(range)
+      start_value = range.split('-').first.to_i
+      delimiter = range.split('-').last.to_i
+      result = []
+
+      for unit in start_value..delimiter do
         result << unit
       end
       format_result(result)
@@ -110,6 +128,7 @@ module Parser
 
     def self.generate_table
       data = [@minutes, @hours, @day_of_month, @months, @day_of_week, @command]
+
       FIELDS.each_with_index.map do |field, index|
         field.ljust(14) + "#{data[index]}"
       end
