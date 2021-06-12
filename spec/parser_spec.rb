@@ -3,13 +3,13 @@ require 'pry'
 
 RSpec.describe Parser::CronExpression do
   describe 'Parser::CronExpression#parse' do
-    xit 'prints the right data' do
+    it 'prints the right data' do
       body = described_class.parse('*/15 0 1,15 * 1-5 /usr/bin/find')
 
       expect(body).to eq(["minute        0 15 30 45",
                           "hour          0",
                           "day of month  1 15",
-                          "month         0 1 2 3 4 5 6 7 8 9 10 11 12",
+                          "month         1 2 3 4 5 6 7 8 9 10 11 12",
                           "day of week   1 2 3 4 5",
                           "command       /usr/bin/find"])
     end
@@ -28,10 +28,16 @@ RSpec.describe Parser::CronExpression do
       expect(minutes).to eq "1 15"
     end
 
-    it 'handles expression that is a range' do
+    it 'handles expression that is a range starting from zero' do
       minutes = described_class.process_minutes('0-5')
 
       expect(minutes).to eq "0 1 2 3 4 5"
+    end
+
+    it 'handles expression that is a range that does not start at zero' do
+      minutes = described_class.process_minutes('23-31')
+
+      expect(minutes).to eq "23 24 25 26 27 28 29 30 31"
     end
 
     it 'handles asterisk' do
@@ -94,10 +100,16 @@ RSpec.describe Parser::CronExpression do
       expect(days).to eq "1 30"
     end
 
-    it 'handles range' do
+    it 'handles range that starts at one' do
       days = described_class.process_days('1-7')
 
       expect(days).to eq "1 2 3 4 5 6 7"
+    end
+
+    it 'handles range that starts at five' do
+      days = described_class.process_days('5-7')
+
+      expect(days).to eq "5 6 7"
     end
 
     it 'handles asterisk' do
