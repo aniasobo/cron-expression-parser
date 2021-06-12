@@ -85,12 +85,12 @@ module Parser
         starts_at_zero ? result = [0] : result = [1]
 
         value = [units_of_time].map { |i| i[/\d+/] }.first.to_i   # grab the numerics
-        starting_value = value                                    # store the multiplier
+        multiplier = value                                        # store the multiplier
         value += margin                                           # set starting value
 
         while value < delimiter do
           result << value
-          value += starting_value
+          value += multiplier
         end
 
         format_result(result)
