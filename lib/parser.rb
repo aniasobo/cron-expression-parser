@@ -28,7 +28,7 @@ module Parser
       elsif minutes['-']
         process_range(minutes)
       elsif minutes['*']
-        handle_asterisk(minutes, MINUTES_DELIMITER, starts_at_zero=true)
+        handle_asterisk(minutes, MINUTES_DELIMITER, starts_at_zero = true)
       else
         true                            # add error handling
       end
@@ -42,7 +42,7 @@ module Parser
       elsif hours['-']
         process_range(hours)
       elsif hours['*']
-        handle_asterisk(hours, HOURS_DELIMITER, starts_at_zero=true)
+        handle_asterisk(hours, HOURS_DELIMITER, starts_at_zero = true)
       else
         true
       end
@@ -90,7 +90,7 @@ module Parser
       end
     end
 
-    def self.handle_asterisk(units_of_time, delimiter, starts_at_zero=false)
+    def self.handle_asterisk(units_of_time, delimiter, starts_at_zero = false)
       if units_of_time['*/']
         starts_at_zero ? margin = 0 : margin = 1
         starts_at_zero ? result = [0] : result = [1]
@@ -104,7 +104,7 @@ module Parser
           value += multiplier
         end
 
-        format_result(result)
+        # format_result(result)
       else
         starts_at_zero ? i = 0 : i = 1
         result = []
@@ -114,8 +114,9 @@ module Parser
           i += 1
         end
 
-        format_result(result)
+        # format_result(result)
       end
+      format_result(result)
     end
 
     def self.process_comma_separated_expression(expression)
@@ -146,6 +147,3 @@ module Parser
     end
   end
 end
-
-cl_input = ARGV[0]
-puts Parser::CronExpression.parse(cl_input)
