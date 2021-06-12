@@ -1,13 +1,8 @@
 module Parser
   module CronExpression
-    # *   -> all of
-    # */x -> every x of
-    # y,x -> only y and x of
-    # y-z -> range y to z of
-
     FIELDS = ['minute', 'hour', 'day of month', 'month', 'day of week', 'command']
     MAX_MINUTES = 60
-    COUNTABLE_HOURS = 24
+    MAX_HOURS = 24
     MAX_DAYS_IN_MONTH = 31
     COUNTABLE_MONTHS = 12
     COUNTABLE_DAYS_IN_WEEK = 7
@@ -25,13 +20,6 @@ module Parser
       generate_table
     end
 
-    # if only digits
-    # if ,
-    # if -
-    # if *
-      # if */
-      # else
-
     def self.process_minutes(minutes)
       if minutes.scan(/\D/).empty?      # no non-digits
         return minutes
@@ -40,36 +28,31 @@ module Parser
       elsif minutes['-']
         process_range(minutes, starts_at_zero=true)
       elsif minutes['*']
-        handle_asterisk_in_minutes(minutes)
+        handle_asterisk(minutes, MAX_MINUTES, starts_at_zero=true)
       else
-        true
+        true                            # add error handling
       end
     end
 
-    def self.handle_asterisk_in_minutes(minutes)
-      if minutes['*/']
-        result = [0]
-        value = [minutes].map { |i| i[/\d+/] }.first.to_i # "15"
-        starting_value = value
-        while value < MAX_MINUTES do
-          result << value
-          value = value + starting_value
-        end
-        format_result(result)
-      else
-        i = 0
-        result = []
-        for minute in 0...MAX_MINUTES do
-          result << minute
-          i += 1
-        end
-        format_result(result)
-      end
-    end
+    # if only digits
+    # if ,
+    # if -
+    # if *
+      # if */
+      # else
 
     def self.process_hours(hours)
-      # TODO
-      hours
+      if hours.scan(/\D/).empty?      # no non-digits
+        return hours
+      elsif hours[',']
+        process_comma_separated_expression(hours)
+      elsif hours['-']
+        process_range(hours, starts_at_zero=true)
+      elsif hours['*']
+        handle_asterisk(hours, MAX_HOURS, starts_at_zero=true)
+      else
+        true                          # add exceptions
+      end
     end
 
     def self.process_dom(dom)
@@ -85,6 +68,27 @@ module Parser
     def self.process_dow(dow)
       # TODO
       dow
+    end
+
+    def self.handle_asterisk(units_of_time, limiter, starts_at_zero=false)
+      if units_of_time['*/']
+        starts_at_zero ? result = [0] : result = []
+        value = [units_of_time].map { |i| i[/\d+/] }.first.to_i
+        starting_value = value
+        while value < limiter do
+          result << value
+          value = value + starting_value
+        end
+        format_result(result)
+      else
+        starts_at_zero ? i = 0 : i = 1
+        result = []
+        for unit_of_time in 0...limiter do
+          result << unit_of_time
+          i += 1
+        end
+        format_result(result)
+      end
     end
 
     def self.process_comma_separated_expression(expression)

@@ -30,7 +30,6 @@ RSpec.describe Parser::CronExpression do
 
     it 'handles expression that is a range' do
       minutes = described_class.process_minutes('1-5')
-      # binding.pry
 
       expect(minutes).to eq "0 1 2 3 4 5"
     end
@@ -46,6 +45,39 @@ RSpec.describe Parser::CronExpression do
       minutes = described_class.process_minutes('*/15')
 
       expect(minutes).to eq "0 15 30 45"
+    end
+  end
+
+  describe 'Parser::CronExpression#process_hours' do
+    it 'handles single digit expression' do
+      hours = described_class.process_hours('0')
+
+      expect(hours).to eq "0"
+    end
+
+    it 'handles comma separated expression' do
+      hours = described_class.process_hours('1,22')
+
+      expect(hours).to eq "1 22"
+    end
+
+    it 'handles range' do
+      hours = described_class.process_hours('1-7')
+
+      expect(hours).to eq "0 1 2 3 4 5 6 7"
+    end
+
+    it 'handles asterisk' do
+      hours = described_class.process_hours('*')
+      all_hours = "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23"
+
+      expect(hours).to eq all_hours
+    end
+
+    it 'handles asterisk range' do
+      hours = described_class.process_hours('*/5')
+
+      expect(hours).to eq "0 5 10 15 20"
     end
   end
 end
