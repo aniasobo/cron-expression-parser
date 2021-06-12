@@ -147,4 +147,36 @@ RSpec.describe Parser::CronExpression do
       expect(months).to eq "1 4 7 10"
     end
   end
+
+  describe 'Parser::CronExpression#process_weekdays' do
+    it 'handles single digit expression' do
+      weekdays = described_class.process_weekdays('1')
+
+      expect(weekdays).to eq "1"
+    end
+
+    it 'handles comma separated expression' do
+      weekdays = described_class.process_weekdays('1,7')
+
+      expect(weekdays).to eq "1 7"
+    end
+
+    it 'handles range' do
+      weekdays = described_class.process_weekdays('1-5')
+
+      expect(weekdays).to eq "1 2 3 4 5"
+    end
+
+    it 'handles asterisk' do
+      weekdays = described_class.process_weekdays('*')
+
+      expect(weekdays).to eq "1 2 3 4 5 6 7"
+    end
+
+    it 'handles asterisk range' do
+      weekdays = described_class.process_weekdays('*/2')
+
+      expect(weekdays).to eq "1 3 5 7"
+    end
+  end
 end

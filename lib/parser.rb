@@ -5,7 +5,7 @@ module Parser
     HOURS_DELIMITER = 24
     DAYS_IN_MONTH_DELIMITER = 32
     MONTHS_DELIMITER = 13
-    WEEKDAYS_DELILMITER = 8
+    WEEKDAYS_DELIMITER = 8
 
     def self.parse(input)
       data = input.split
@@ -14,7 +14,7 @@ module Parser
       @hours = process_hours(data[1])
       @day_of_month = process_days(data[2])
       @months = process_months(data[3])
-      @day_of_week = process_dow(data[4])
+      @day_of_week = process_weekdays(data[4])
       @command = data.last
 
       generate_table
@@ -22,7 +22,7 @@ module Parser
 
     def self.process_minutes(minutes)
       if minutes.scan(/\D/).empty?      # no non-digits
-        return minutes
+        minutes
       elsif minutes[',']
         process_comma_separated_expression(minutes)
       elsif minutes['-']
@@ -36,7 +36,7 @@ module Parser
 
     def self.process_hours(hours)
       if hours.scan(/\D/).empty?
-        return hours
+        hours
       elsif hours[',']
         process_comma_separated_expression(hours)
       elsif hours['-']
@@ -50,7 +50,7 @@ module Parser
 
     def self.process_days(days)
       if days.scan(/\D/).empty?
-        return days
+        days
       elsif days[',']
         process_comma_separated_expression(days)
       elsif days['-']
@@ -64,7 +64,7 @@ module Parser
 
     def self.process_months(months)
       if months.scan(/\D/).empty?
-        return months
+        months
       elsif months[',']
         process_comma_separated_expression(months)
       elsif months['-']
@@ -76,9 +76,18 @@ module Parser
       end
     end
 
-    def self.process_dow(dow)
-      # TODO
-      dow
+    def self.process_weekdays(weekdays)
+      if weekdays.scan(/\D/).empty?
+        weekdays
+      elsif weekdays[',']
+        process_comma_separated_expression(weekdays)
+      elsif weekdays['-']
+        process_range(weekdays)
+      elsif weekdays['*']
+        handle_asterisk(weekdays, WEEKDAYS_DELIMITER)
+      else
+        true
+      end
     end
 
     def self.handle_asterisk(units_of_time, delimiter, starts_at_zero=false)
