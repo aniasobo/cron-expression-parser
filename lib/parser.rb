@@ -1,11 +1,11 @@
 module Parser
   module CronExpression
     FIELDS = ['minute', 'hour', 'day of month', 'month', 'day of week', 'command']
-    MAX_MINUTES = 60
-    MAX_HOURS = 24
+    MINUTES_DELIMITER = 60
+    HOURS_DELIMITER = 24
     DAYS_IN_MONTH_DELIMITER = 32
-    COUNTABLE_MONTHS = 12
-    COUNTABLE_DAYS_IN_WEEK = 7
+    MONTHS_DELIMITER = 13
+    WEEKDAYS_DELILMITER = 8
 
     def self.parse(input)
       data = input.split
@@ -28,35 +28,28 @@ module Parser
       elsif minutes['-']
         process_range(minutes)
       elsif minutes['*']
-        handle_asterisk(minutes, MAX_MINUTES, starts_at_zero=true)
+        handle_asterisk(minutes, MINUTES_DELIMITER, starts_at_zero=true)
       else
         true                            # add error handling
       end
     end
 
-    # if only digits
-    # if ,
-    # if -
-    # if *
-      # if */
-      # else
-
     def self.process_hours(hours)
-      if hours.scan(/\D/).empty?      # no non-digits
+      if hours.scan(/\D/).empty?
         return hours
       elsif hours[',']
         process_comma_separated_expression(hours)
       elsif hours['-']
         process_range(hours)
       elsif hours['*']
-        handle_asterisk(hours, MAX_HOURS, starts_at_zero=true)
+        handle_asterisk(hours, HOURS_DELIMITER, starts_at_zero=true)
       else
-        true                          # exceptions TBA
+        true
       end
     end
 
     def self.process_days(days)
-      if days.scan(/\D/).empty?      # no non-digits
+      if days.scan(/\D/).empty?
         return days
       elsif days[',']
         process_comma_separated_expression(days)
@@ -65,13 +58,22 @@ module Parser
       elsif days['*']
         handle_asterisk(days, DAYS_IN_MONTH_DELIMITER)
       else
-        true                          # exceptions TBA
+        true
       end
     end
 
     def self.process_months(months)
-      # TODO
-      months
+      if months.scan(/\D/).empty?
+        return months
+      elsif months[',']
+        process_comma_separated_expression(months)
+      elsif months['-']
+        process_range(months)
+      elsif months['*']
+        handle_asterisk(months, MONTHS_DELIMITER)
+      else
+        true
+      end
     end
 
     def self.process_dow(dow)

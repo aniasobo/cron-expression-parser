@@ -114,4 +114,37 @@ RSpec.describe Parser::CronExpression do
       expect(days).to eq "1 6 11 16 21 26 31"
     end
   end
+
+  describe 'Parser::CronExpression#process_months' do
+    it 'handles single digit expression' do
+      months = described_class.process_months('1')
+
+      expect(months).to eq "1"
+    end
+
+    it 'handles comma separated expression' do
+      months = described_class.process_months('1,3')
+
+      expect(months).to eq "1 3"
+    end
+
+    it 'handles range' do
+      months = described_class.process_months('1-3')
+
+      expect(months).to eq "1 2 3"
+    end
+
+    it 'handles asterisk' do
+      months = described_class.process_months('*')
+      all_months = "1 2 3 4 5 6 7 8 9 10 11 12"
+
+      expect(months).to eq all_months
+    end
+
+    it 'handles asterisk range' do
+      months = described_class.process_months('*/3')
+
+      expect(months).to eq "1 4 7 10"
+    end
+  end
 end
