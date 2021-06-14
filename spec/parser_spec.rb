@@ -199,7 +199,6 @@ RSpec.describe Parser::CronExpression do
 
     it 'handles range' do
       weekdays = described_class.process_weekdays('1-5')
-      # binding.pry
 
       expect(weekdays).to eq "1 2 3 4 5"
     end

@@ -78,11 +78,11 @@ module Parser
     end
 
     def self.process_weekdays(weekdays)
-      days = DAYS_OF_WEEK.keys.map(&:to_s) # ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+      days = DAYS_OF_WEEK.keys.map(&:to_s)
       weekdays.downcase!
       days.each {|day| weekdays.gsub!(day, DAYS_OF_WEEK[day.to_sym])}
 
-      if weekdays.scan(/\D/).empty?  # no non digits - only digits
+      if weekdays.scan(/\D/).empty?
         weekdays
       elsif weekdays[',']
         process_comma_separated_expression(weekdays)
