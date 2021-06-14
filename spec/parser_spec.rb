@@ -13,6 +13,30 @@ RSpec.describe Parser::CronExpression do
                           "day of week   1 2 3 4 5",
                           "command       /usr/bin/find"])
     end
+
+    #
+    it 'prints the right data with excess data' do
+      body = described_class.parse('*/10 1-3 1,15 * 1aaa-4aaa /usr/bin/find all')
+
+      expect(body).to eq(["minute        0 10 20 30 40 50",
+                          "hour          1 2 3",
+                          "day of month  1 15",
+                          "month         1 2 3 4 5 6 7 8 9 10 11 12",
+                          "day of week   1 2 3 4",
+                          "command       /usr/bin/find all"])
+    end
+
+    it 'prints the right data with spelled out weekday data' do
+      body = described_class.parse('*/10 1-3 1,15 * MON-THU /usr/bin/find all')
+
+      expect(body).to eq(["minute        0 10 20 30 40 50",
+                          "hour          1 2 3",
+                          "day of month  1 15",
+                          "month         1 2 3 4 5 6 7 8 9 10 11 12",
+                          "day of week   1 2 3 4",
+                          "command       /usr/bin/find all"])
+    end
+
   end
 
   describe 'Parser::CronExpression#process_minutes' do
@@ -175,6 +199,7 @@ RSpec.describe Parser::CronExpression do
 
     it 'handles range' do
       weekdays = described_class.process_weekdays('1-5')
+      # binding.pry
 
       expect(weekdays).to eq "1 2 3 4 5"
     end

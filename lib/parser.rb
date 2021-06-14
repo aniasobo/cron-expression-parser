@@ -6,6 +6,7 @@ module Parser
     DAYS_IN_MONTH_DELIMITER = 32
     MONTHS_DELIMITER = 13
     WEEKDAYS_DELIMITER = 8
+    DAYS_OF_WEEK = {mon: '1', tue: '2', wed: '3', thu: '4', fri: '5', sat: '6', sun: '7'}
 
     def self.parse(input)
       data = input.split
@@ -15,7 +16,7 @@ module Parser
       @day_of_month = process_days(data[2])
       @months = process_months(data[3])
       @day_of_week = process_weekdays(data[4])
-      @command = data.last
+      @command = data[5..-1].join(' ')
 
       generate_table
     end
@@ -77,7 +78,11 @@ module Parser
     end
 
     def self.process_weekdays(weekdays)
-      if weekdays.scan(/\D/).empty?
+      days = DAYS_OF_WEEK.keys.map(&:to_s) # ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+      weekdays.downcase!
+      days.each {|day| weekdays.gsub!(day, DAYS_OF_WEEK[day.to_sym])}
+
+      if weekdays.scan(/\D/).empty?  # no non digits - only digits
         weekdays
       elsif weekdays[',']
         process_comma_separated_expression(weekdays)
@@ -104,7 +109,6 @@ module Parser
           value += multiplier
         end
 
-        # format_result(result)
       else
         starts_at_zero ? i = 0 : i = 1
         result = []
@@ -114,7 +118,6 @@ module Parser
           i += 1
         end
 
-        # format_result(result)
       end
       format_result(result)
     end
